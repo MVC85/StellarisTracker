@@ -9,14 +9,13 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #05050d;
-    --bg2: #0b0b1a;
-    --surface: #0f0f22;
-    --border: rgba(120, 140, 255, 0.18);
+    --bg: #04040c;
+    --surface: #0d0d1e;
+    --border: rgba(110, 130, 255, 0.2);
     --accent: #4a6cf7;
     --accent2: #7c9dff;
     --text: #c8d0f0;
-    --muted: #5a6090;
+    --muted: #4a5280;
     --gold: #e8c97a;
     --mono: 'Share Tech Mono', monospace;
     --display: 'Orbitron', monospace;
@@ -35,197 +34,139 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    gap: 0;
+    height: 100vh;
   }
 
   header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 18px;
+    gap: 14px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
   }
 
   .logo {
     font-family: var(--display);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.25em;
+    letter-spacing: 0.28em;
     color: var(--accent2);
     text-transform: uppercase;
   }
+  .logo span { color: var(--muted); font-weight: 400; }
+  .sep { width: 1px; height: 16px; background: var(--border); }
+  .tagline { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
 
-  .logo span {
-    color: var(--muted);
-    font-weight: 400;
-  }
-
-  .sep { width: 1px; height: 18px; background: var(--border); }
-
-  .tagline {
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
-  /* Main layout */
-  .layout {
-    display: flex;
-    align-items: flex-start;
-    gap: 24px;
-  }
-
-  /* Galaxy canvas wrapper */
-  #galaxy-wrap {
+  #map-container {
     position: relative;
-    width: 520px;
-    height: 520px;
     flex-shrink: 0;
   }
 
-  canvas {
+  #gc {
     display: block;
     cursor: crosshair;
-    border-radius: 50%;
   }
 
-  /* Crosshair overlay */
-  #crosshair {
+  #overlay {
     position: absolute;
+    top: 0; left: 0;
     pointer-events: none;
-    display: none;
   }
 
-  #crosshair::before, #crosshair::after {
-    content: '';
-    position: absolute;
-    background: rgba(74, 108, 247, 0.45);
-  }
-  #crosshair::before { width: 1px; height: 14px; top: -7px; left: 0; }
-  #crosshair::after  { width: 14px; height: 1px; top: 0; left: -7px; }
-
-  /* Right panel */
-  .panel {
-    width: 210px;
+  /* HUD bar below the map */
+  #hud {
     display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding-top: 4px;
-  }
-
-  .coord-display {
-    background: var(--surface);
+    align-items: center;
+    gap: 12px;
+    background: rgba(3, 3, 12, 0.84);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 14px 16px;
+    padding: 8px 20px;
+    pointer-events: none;
+    white-space: nowrap;
+    min-width: 280px;
+    justify-content: center;
+    margin-top: 10px;
+    flex-shrink: 0;
   }
 
-  .coord-label {
+  .hud-label {
     font-size: 9px;
     letter-spacing: 0.2em;
     color: var(--muted);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    flex-shrink: 0;
   }
 
-  .coord-value {
+  /* Fixed-width monospaced coord — never changes size */
+  #hud-coord {
     font-family: var(--display);
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--gold);
     letter-spacing: 0.05em;
-    line-height: 1.2;
-    min-height: 28px;
+    width: 130px;
+    text-align: center;
+    flex-shrink: 0;
   }
 
-  .coord-value.empty {
+  #hud-coord.empty {
     color: var(--muted);
-    font-size: 13px;
     font-family: var(--mono);
-    font-weight: 400;
-    padding-top: 4px;
-  }
-
-  .coord-sub {
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 6px;
-    min-height: 14px;
-  }
-
-  /* Clock visual */
-  .clock-visual {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px 16px;
-  }
-
-  .clock-visual .coord-label { margin-bottom: 10px; }
-
-  #clock-svg {
-    display: block;
-    margin: 0 auto;
-  }
-
-  /* Legend */
-  .legend {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px 16px;
-  }
-
-  .legend .coord-label { margin-bottom: 8px; }
-
-  .legend-row {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 5px;
     font-size: 11px;
-    color: var(--text);
+    font-weight: 400;
+    letter-spacing: 0.1em;
   }
 
-  .legend-key {
+  .hud-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+  #hud-dir {
+    font-size: 11px;
     color: var(--accent2);
-    min-width: 28px;
-    font-size: 10px;
+    width: 36px;
+    text-align: center;
+    flex-shrink: 0;
   }
 
-  /* Copy feedback */
-  #copy-toast {
+  #toast {
     position: fixed;
-    bottom: 28px;
+    bottom: 22px;
     left: 50%;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateX(-50%) translateY(8px);
     background: var(--accent);
     color: #fff;
     font-family: var(--mono);
     font-size: 11px;
     letter-spacing: 0.1em;
-    padding: 7px 18px;
+    padding: 7px 20px;
     border-radius: 4px;
     opacity: 0;
-    transition: opacity 0.25s, transform 0.25s;
+    transition: opacity 0.22s, transform 0.22s;
     pointer-events: none;
     white-space: nowrap;
+    z-index: 10;
   }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  #copy-toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* Bottom hint */
   .hint {
-    margin-top: 14px;
-    font-size: 10px;
+    margin-top: 10px;
+    font-size: 9px;
     color: var(--muted);
-    letter-spacing: 0.12em;
-    text-align: center;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .q-label {
+    position: absolute;
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(160,185,255,0.6);
+    letter-spacing: 0.15em;
+    pointer-events: none;
+    user-select: none;
+    transform: translate(-50%, -50%);
   }
 </style>
 </head>
@@ -237,63 +178,60 @@
   <div class="tagline">Coordinate Tracker</div>
 </header>
 
-<div class="layout">
+<div id="map-container">
+  <canvas id="gc"></canvas>
+  <canvas id="overlay"></canvas>
+</div>
 
-  <div id="galaxy-wrap">
-    <canvas id="gc" width="520" height="520"></canvas>
-    <div id="crosshair"></div>
-  </div>
-
-  <div class="panel">
-
-    <div class="coord-display">
-      <div class="coord-label">Coordenada atual</div>
-      <div class="coord-value empty" id="coord-main">— passe o mouse</div>
-      <div class="coord-sub" id="coord-sub"></div>
-    </div>
-
-    <div class="clock-visual">
-      <div class="coord-label">Bússola do relógio</div>
-      <svg id="clock-svg" width="130" height="130" viewBox="0 0 130 130">
-        <!-- ring -->
-        <circle cx="65" cy="65" r="58" fill="none" stroke="rgba(120,140,255,0.15)" stroke-width="1"/>
-        <circle cx="65" cy="65" r="2" fill="rgba(120,140,255,0.4)"/>
-        <!-- hour ticks -->
-        <g id="clock-ticks"></g>
-        <!-- hour labels -->
-        <g id="clock-labels"></g>
-        <!-- needle -->
-        <line id="clock-needle" x1="65" y1="65" x2="65" y2="14" stroke="rgba(74,108,247,0)" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- dist ring -->
-        <circle id="dist-ring" cx="65" cy="65" r="0" fill="none" stroke="rgba(232,201,122,0)" stroke-width="1" stroke-dasharray="3 4"/>
-        <!-- dot -->
-        <circle id="clock-dot" cx="65" cy="65" r="3.5" fill="var(--gold)" opacity="0"/>
-      </svg>
-    </div>
-
-    <div class="legend">
-      <div class="coord-label">Como ler</div>
-      <div class="legend-row"><span class="legend-key">Hora</span> direção (1–12h)</div>
-      <div class="legend-row"><span class="legend-key">Min</span> subdivisão (0–59)</div>
-      <div class="legend-row"><span class="legend-key">Dist</span> % do centro (0–100)</div>
-      <div style="margin-top:8px; font-size:10px; color:var(--muted); line-height:1.6">
-        Clique na galáxia para<br>copiar a coordenada.
-      </div>
-    </div>
-
-  </div>
+<div id="hud">
+  <span class="hud-label">coord</span>
+  <div class="hud-sep"></div>
+  <span id="hud-coord" class="empty">— —</span>
+  <div class="hud-sep"></div>
+  <span id="hud-dir">—</span>
 </div>
 
 <div class="hint">hover → lê &nbsp;·&nbsp; clique → copia para o clipboard</div>
-<div id="copy-toast"></div>
+<div id="toast"></div>
 
 <script>
 (function () {
-  const canvas = document.getElementById('gc');
-  const ctx = canvas.getContext('2d');
-  const SIZE = 520, CX = 260, CY = 260, R = 254;
 
-  /* ── Stars ─────────────────────────────────────── */
+  /* ── Sizing: fill available viewport ── */
+  const MARGIN = 160;
+  const RAW = Math.min(window.innerWidth - 20, window.innerHeight - MARGIN, 860);
+  const PAD = 28; // space outside the circle for N/L/S/O labels
+  const SIZE = Math.floor(RAW / 2) * 2;
+  const CX = SIZE / 2, CY = SIZE / 2, R = SIZE / 2 - PAD;
+
+  const gc  = document.getElementById('gc');
+  const ov  = document.getElementById('overlay');
+  gc.width = ov.width = SIZE;
+  gc.height = ov.height = SIZE;
+  gc.style.width = ov.style.width = SIZE + 'px';
+  gc.style.height = ov.style.height = SIZE + 'px';
+
+  const gctx = gc.getContext('2d');
+  const octx = ov.getContext('2d');
+
+  /* ── Quadrant labels as HTML elements ── */
+  const mapContainer = document.getElementById('map-container');
+  const QDIST = R + PAD * 0.7; // distance from center to label
+  [
+    { label: 'N', angle: -Math.PI / 2 },
+    { label: 'L', angle: 0 },
+    { label: 'S', angle:  Math.PI / 2 },
+    { label: 'O', angle:  Math.PI },
+  ].forEach(({ label, angle }) => {
+    const el = document.createElement('div');
+    el.className = 'q-label';
+    el.textContent = label;
+    el.style.left = (CX + Math.cos(angle) * QDIST) + 'px';
+    el.style.top  = (CY + Math.sin(angle) * QDIST) + 'px';
+    mapContainer.appendChild(el);
+  });
+
+  /* ── Star field ── */
   const stars = [];
   const rnd = (a, b) => a + Math.random() * (b - a);
   const ARMS = 5;
@@ -301,52 +239,41 @@
 
   for (let arm = 0; arm < ARMS; arm++) {
     const base = (arm / ARMS) * Math.PI * 2;
-    for (let i = 0; i < 380; i++) {
-      const t = i / 380;
+    for (let i = 0; i < 500; i++) {
+      const t = i / 500;
       const dist = t * R * 0.91;
       const spread = rnd(0, 0.22) * (1 + t * 0.6);
       const angle = base + t * Math.PI * 3.4 + (Math.random() - 0.5) * spread * 2;
       const x = CX + Math.cos(angle) * dist;
       const y = CY + Math.sin(angle) * dist;
       if (Math.hypot(x - CX, y - CY) > R - 4) continue;
-      stars.push({
-        x, y,
-        r: Math.random() < 0.04 ? rnd(1.3, 2.4) : rnd(0.3, 1.0),
-        a: rnd(0.35, 0.95),
-        h: armHues[arm],
-        arm
-      });
+      stars.push({ x, y, r: Math.random() < 0.04 ? rnd(1.2, 2.2) : rnd(0.3, 1.0), a: rnd(0.35, 0.95), h: armHues[arm] });
     }
   }
-  for (let i = 0; i < 700; i++) {
+  for (let i = 0; i < 1000; i++) {
     const ang = Math.random() * Math.PI * 2;
     const d = Math.random() * R * 0.97;
-    stars.push({ x: CX + Math.cos(ang)*d, y: CY + Math.sin(ang)*d, r: rnd(0.2, 0.55), a: rnd(0.1, 0.35), h: 220, arm: -1 });
+    stars.push({ x: CX + Math.cos(ang)*d, y: CY + Math.sin(ang)*d, r: rnd(0.15, 0.5), a: rnd(0.08, 0.28), h: 220 });
   }
 
-  /* ── Draw galaxy ────────────────────────────────── */
+  /* ── Draw static galaxy ── */
   function drawGalaxy() {
-    ctx.clearRect(0, 0, SIZE, SIZE);
+    gctx.clearRect(0, 0, SIZE, SIZE);
+    gctx.save();
+    gctx.beginPath();
+    gctx.arc(CX, CY, R, 0, Math.PI * 2);
+    gctx.clip();
 
-    // clip to circle
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CX, CY, R, 0, Math.PI * 2);
-    ctx.clip();
+    gctx.fillStyle = '#03030b';
+    gctx.fillRect(0, 0, SIZE, SIZE);
 
-    // bg
-    ctx.fillStyle = '#04040d';
-    ctx.fillRect(0, 0, SIZE, SIZE);
-
-    // core
-    const cg = ctx.createRadialGradient(CX, CY, 0, CX, CY, R * 0.2);
-    cg.addColorStop(0, 'rgba(255,245,210,0.6)');
-    cg.addColorStop(0.25, 'rgba(180,160,255,0.2)');
+    const cg = gctx.createRadialGradient(CX, CY, 0, CX, CY, R * 0.18);
+    cg.addColorStop(0, 'rgba(255,248,215,0.65)');
+    cg.addColorStop(0.3, 'rgba(180,160,255,0.18)');
     cg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.beginPath(); ctx.arc(CX, CY, R * 0.2, 0, Math.PI * 2);
-    ctx.fillStyle = cg; ctx.fill();
+    gctx.beginPath(); gctx.arc(CX, CY, R * 0.18, 0, Math.PI * 2);
+    gctx.fillStyle = cg; gctx.fill();
 
-    // arm glows
     for (let arm = 0; arm < ARMS; arm++) {
       const base = (arm / ARMS) * Math.PI * 2;
       for (let i = 0; i < 10; i++) {
@@ -355,241 +282,222 @@
         const angle = base + t * Math.PI * 3.4;
         const gx = CX + Math.cos(angle) * d;
         const gy = CY + Math.sin(angle) * d;
-        const gr = ctx.createRadialGradient(gx, gy, 0, gx, gy, d * 0.2 + 12);
-        gr.addColorStop(0, `hsla(${armHues[arm]},80%,75%,0.06)`);
+        const gr = gctx.createRadialGradient(gx, gy, 0, gx, gy, d * 0.2 + 14);
+        gr.addColorStop(0, `hsla(${armHues[arm]},80%,75%,0.055)`);
         gr.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.beginPath(); ctx.arc(gx, gy, d * 0.2 + 12, 0, Math.PI * 2);
-        ctx.fillStyle = gr; ctx.fill();
+        gctx.beginPath(); gctx.arc(gx, gy, d * 0.2 + 14, 0, Math.PI * 2);
+        gctx.fillStyle = gr; gctx.fill();
       }
     }
 
-    // stars
     for (const s of stars) {
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${s.h},70%,85%,${s.a})`;
-      ctx.fill();
+      gctx.beginPath();
+      gctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      gctx.fillStyle = `hsla(${s.h},70%,85%,${s.a})`;
+      gctx.fill();
     }
 
-    ctx.restore();
+    gctx.restore();
 
-    // Grid overlay (outside clip so rings look crisp)
-    // Distance rings
-    ctx.save();
-    ctx.setLineDash([2, 6]);
-    ctx.strokeStyle = 'rgba(100,120,220,0.14)';
-    ctx.lineWidth = 0.5;
+    // distance rings (dashed)
+    gctx.save();
+    gctx.setLineDash([2, 7]);
+    gctx.strokeStyle = 'rgba(100,120,220,0.11)';
+    gctx.lineWidth = 0.6;
     for (let i = 2; i <= 10; i += 2) {
-      ctx.beginPath();
-      ctx.arc(CX, CY, R * i / 10, 0, Math.PI * 2);
-      ctx.stroke();
+      gctx.beginPath();
+      gctx.arc(CX, CY, R * i / 10, 0, Math.PI * 2);
+      gctx.stroke();
     }
-    ctx.restore();
+    gctx.restore();
 
-    // Clock spokes — 12 spokes, 0° at top, CW
-    ctx.save();
-    ctx.setLineDash([1, 7]);
-    ctx.strokeStyle = 'rgba(100,120,220,0.14)';
-    ctx.lineWidth = 0.5;
+    // clock spokes (dashed)
+    gctx.save();
+    gctx.setLineDash([1, 9]);
+    gctx.strokeStyle = 'rgba(100,120,220,0.11)';
+    gctx.lineWidth = 0.6;
     for (let h = 0; h < 12; h++) {
       const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
-      ctx.beginPath();
-      ctx.moveTo(CX, CY);
-      ctx.lineTo(CX + Math.cos(a) * R, CY + Math.sin(a) * R);
-      ctx.stroke();
+      gctx.beginPath();
+      gctx.moveTo(CX, CY);
+      gctx.lineTo(CX + Math.cos(a) * R, CY + Math.sin(a) * R);
+      gctx.stroke();
     }
-    ctx.restore();
+    gctx.restore();
 
-    // Hour labels on the rim
-    ctx.save();
-    ctx.font = '9px "Share Tech Mono", monospace';
-    ctx.fillStyle = 'rgba(140,160,230,0.5)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    // hour labels near the rim, inside the galaxy
+    const fontSize = Math.max(9, Math.round(SIZE * 0.018));
+    gctx.save();
+    gctx.font = `${fontSize}px "Share Tech Mono", monospace`;
+    gctx.textAlign = 'center';
+    gctx.textBaseline = 'middle';
+    gctx.fillStyle = 'rgba(140,160,230,0.5)';
     for (let h = 1; h <= 12; h++) {
-      const a = ((h / 12) * Math.PI * 2) - Math.PI / 2;
-      const lr = R + 15;
-      ctx.fillText(h + 'h', CX + Math.cos(a) * lr, CY + Math.sin(a) * lr);
+      const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
+      const lr = R - fontSize * 1.5;
+      gctx.fillText(h + 'h', CX + Math.cos(a) * lr, CY + Math.sin(a) * lr);
     }
-    ctx.restore();
+    gctx.restore();
 
-    // Outer ring
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CX, CY, R, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(120,140,255,0.22)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([]);
-    ctx.stroke();
-    ctx.restore();
+    // outer ring
+    gctx.save();
+    gctx.beginPath();
+    gctx.arc(CX, CY, R, 0, Math.PI * 2);
+    gctx.strokeStyle = 'rgba(120,140,255,0.22)';
+    gctx.lineWidth = 1;
+    gctx.setLineDash([]);
+    gctx.stroke();
+    gctx.restore();
 
-    // Center
-    ctx.beginPath();
-    ctx.arc(CX, CY, 3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,245,200,0.9)';
-    ctx.fill();
+
+
+    // center
+    gctx.beginPath();
+    gctx.arc(CX, CY, 3, 0, Math.PI * 2);
+    gctx.fillStyle = 'rgba(255,248,200,0.9)';
+    gctx.fill();
   }
 
   drawGalaxy();
 
-  /* ── Clock SVG init ──────────────────────────────── */
-  const tickG = document.getElementById('clock-ticks');
-  const labelG = document.getElementById('clock-labels');
-  const needle = document.getElementById('clock-needle');
-  const distRing = document.getElementById('dist-ring');
-  const dot = document.getElementById('clock-dot');
-  const CCX = 65, CCY = 65, CR = 52;
+  /* ── Overlay clock position ── */
+  // Clock is drawn in the upper-right area of the galaxy
+  const CLOCK_R = SIZE * 0.12;
+  const CLOCK_X = CX + R * 0.60;
+  const CLOCK_Y = CY - R * 0.60;
 
-  for (let h = 1; h <= 12; h++) {
-    const a = ((h / 12) * Math.PI * 2) - Math.PI / 2;
-    const isMajor = h % 3 === 0;
-    const r1 = isMajor ? CR - 6 : CR - 4;
-    const x1 = CCX + Math.cos(a) * r1, y1 = CCY + Math.sin(a) * r1;
-    const x2 = CCX + Math.cos(a) * CR, y2 = CCY + Math.sin(a) * CR;
-    const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    tick.setAttribute('x1', x1); tick.setAttribute('y1', y1);
-    tick.setAttribute('x2', x2); tick.setAttribute('y2', y2);
-    tick.setAttribute('stroke', isMajor ? 'rgba(120,140,255,0.4)' : 'rgba(120,140,255,0.2)');
-    tick.setAttribute('stroke-width', isMajor ? '1.2' : '0.7');
-    tickG.appendChild(tick);
+  function drawOverlay(angleDeg, distPct, mx, my, coordText, dirText) {
+    octx.clearRect(0, 0, SIZE, SIZE);
 
-    if (isMajor) {
-      const lr = CR - 13;
-      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      txt.setAttribute('x', CCX + Math.cos(a) * lr);
-      txt.setAttribute('y', CCY + Math.sin(a) * lr);
-      txt.setAttribute('text-anchor', 'middle');
-      txt.setAttribute('dominant-baseline', 'middle');
-      txt.setAttribute('fill', 'rgba(140,160,230,0.6)');
-      txt.setAttribute('font-size', '8');
-      txt.setAttribute('font-family', '"Share Tech Mono", monospace');
-      txt.textContent = h;
-      labelG.appendChild(txt);
-    }
+    // ── Crosshair at cursor ──
+    const len = 10, gap = 5;
+    octx.save();
+    octx.strokeStyle = 'rgba(74,108,247,0.75)';
+    octx.lineWidth = 1;
+    octx.setLineDash([]);
+    octx.beginPath();
+    octx.moveTo(mx - len - gap, my); octx.lineTo(mx - gap, my);
+    octx.moveTo(mx + gap, my);       octx.lineTo(mx + len + gap, my);
+    octx.moveTo(mx, my - len - gap); octx.lineTo(mx, my - gap);
+    octx.moveTo(mx, my + gap);       octx.lineTo(mx, my + len + gap);
+    octx.stroke();
+    octx.beginPath();
+    octx.arc(mx, my, gap, 0, Math.PI * 2);
+    octx.strokeStyle = 'rgba(232,201,122,0.75)';
+    octx.stroke();
+    octx.restore();
+
+    // ── Floating coord label ──
+    const label = coordText + '  ' + dirText;
+    const tfs = Math.max(10, Math.round(SIZE * 0.019));
+    octx.save();
+    octx.font = `600 ${tfs}px "Orbitron", monospace`;
+    const tw = octx.measureText(label).width;
+    const th = tfs + 4;
+    const pad = 7;
+    const offX = 18, offY = -14;
+    // flip to left if too close to right edge
+    let tx = mx + offX;
+    if (tx + tw + pad * 2 > SIZE) tx = mx - offX - tw - pad * 2;
+    const ty = my + offY - th / 2;
+    // background pill
+    octx.beginPath();
+    const bx = tx - pad, by = ty - pad, bw = tw + pad * 2, bh = th + pad * 2;
+    const br = 4;
+    octx.moveTo(bx + br, by);
+    octx.lineTo(bx + bw - br, by); octx.arcTo(bx + bw, by, bx + bw, by + br, br);
+    octx.lineTo(bx + bw, by + bh - br); octx.arcTo(bx + bw, by + bh, bx + bw - br, by + bh, br);
+    octx.lineTo(bx + br, by + bh); octx.arcTo(bx, by + bh, bx, by + bh - br, br);
+    octx.lineTo(bx, by + br); octx.arcTo(bx, by, bx + br, by, br);
+    octx.closePath();
+    octx.fillStyle = 'rgba(4,4,16,0.88)';
+    octx.fill();
+    octx.strokeStyle = 'rgba(110,130,255,0.35)';
+    octx.lineWidth = 1;
+    octx.stroke();
+    // text
+    octx.fillStyle = '#e8c97a';
+    octx.textBaseline = 'middle';
+    octx.fillText(label, tx, ty + th / 2 + 1);
+    octx.restore();
   }
 
-  function updateClock(angleDeg, distPct) {
-    // angleDeg: 0 = 12h, goes CW
-    const rad = (angleDeg / 360) * Math.PI * 2 - Math.PI / 2;
-    const nx = CCX + Math.cos(rad) * (CR - 8);
-    const ny = CCY + Math.sin(rad) * (CR - 8);
-    needle.setAttribute('x2', nx);
-    needle.setAttribute('y2', ny);
-    needle.setAttribute('stroke', 'rgba(74,108,247,0.8)');
-
-    const dr = (distPct / 100) * (CR - 10);
-    distRing.setAttribute('r', dr);
-    distRing.setAttribute('stroke', 'rgba(232,201,122,0.5)');
-
-    const dx = CCX + Math.cos(rad) * dr;
-    const dy = CCY + Math.sin(rad) * dr;
-    dot.setAttribute('cx', dx);
-    dot.setAttribute('cy', dy);
-    dot.setAttribute('opacity', '1');
-  }
-
-  function clearClock() {
-    needle.setAttribute('stroke', 'rgba(74,108,247,0)');
-    distRing.setAttribute('stroke', 'rgba(232,201,122,0)');
-    dot.setAttribute('opacity', '0');
-  }
-
-  /* ── Coordinate conversion ───────────────────────── */
-  // Returns { hour, minute, dist } clock-based coordinates
+  /* ── Coordinate math ── */
   function getCoord(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = SIZE / rect.width;
-    const scaleY = SIZE / rect.height;
-    const px = (clientX - rect.left) * scaleX;
-    const py = (clientY - rect.top) * scaleY;
+    const rect = gc.getBoundingClientRect();
+    const px = (clientX - rect.left) * (SIZE / rect.width);
+    const py = (clientY - rect.top) * (SIZE / rect.height);
     const dx = px - CX, dy = py - CY;
     const dist = Math.hypot(dx, dy);
     if (dist > R) return null;
 
-    // atan2 gives angle from east, CCW. Convert to CW from north (12h).
     let angleDeg = Math.atan2(dy, dx) * 180 / Math.PI + 90;
     if (angleDeg < 0) angleDeg += 360;
     if (angleDeg >= 360) angleDeg -= 360;
 
-    // Convert to clock: total minutes in 12h cycle = 720
     const totalMinutes = (angleDeg / 360) * 720;
-    const hour = Math.floor(totalMinutes / 60) % 12 || 12;
+    const hour   = Math.floor(totalMinutes / 60) % 12 || 12;
     const minute = Math.floor(totalMinutes % 60);
     const distPct = Math.round((dist / R) * 100);
 
-    return { hour, minute, distPct, angleDeg };
+    return { hour, minute, distPct, angleDeg, px, py };
   }
 
+  // Format: [HH.MM-DD]  e.g.  [01.18-65]
   function formatCoord(c) {
+    const h = String(c.hour).padStart(2, '0');
     const m = String(c.minute).padStart(2, '0');
-    return `${c.hour}h${m}m / ${c.distPct}%`;
+    const d = String(c.distPct).padStart(2, '0');
+    return `[${h}.${m}-${d}]`;
   }
 
-  /* ── UI elements ─────────────────────────────────── */
-  const coordMain = document.getElementById('coord-main');
-  const coordSub = document.getElementById('coord-sub');
-  const crosshair = document.getElementById('crosshair');
-  const toast = document.getElementById('copy-toast');
+  const COMPASS = ['N','NNE','NE','ENE','L','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+  const compassDir = a => COMPASS[Math.round(a / 22.5) % 16];
 
-  const COMPASS_LABELS = ['N','NNE','NE','ENE','L','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+  /* ── HUD ── */
+  const hudCoord = document.getElementById('hud-coord');
+  const hudDir   = document.getElementById('hud-dir');
+  const toast    = document.getElementById('toast');
 
-  function compassDir(angleDeg) {
-    const idx = Math.round(angleDeg / 22.5) % 16;
-    return COMPASS_LABELS[idx];
-  }
-
-  canvas.addEventListener('mousemove', function (e) {
+  gc.addEventListener('mousemove', function (e) {
     const c = getCoord(e.clientX, e.clientY);
     if (!c) {
-      coordMain.textContent = '— fora do mapa';
-      coordMain.className = 'coord-value empty';
-      coordSub.textContent = '';
-      crosshair.style.display = 'none';
-      clearClock();
+      octx.clearRect(0, 0, SIZE, SIZE);
+      hudCoord.textContent = '— —';
+      hudCoord.className = 'empty';
+      hudDir.textContent = '—';
       return;
     }
-
-    const m = String(c.minute).padStart(2, '0');
-    coordMain.textContent = `${c.hour}h ${m}m · ${c.distPct}%`;
-    coordMain.className = 'coord-value';
-    coordSub.textContent = `direção: ${compassDir(c.angleDeg)} · clique para copiar`;
-
-    const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-    crosshair.style.display = 'block';
-    crosshair.style.left = sx + 'px';
-    crosshair.style.top = sy + 'px';
-
-    updateClock(c.angleDeg, c.distPct);
+    hudCoord.textContent = formatCoord(c);
+    hudCoord.className = '';
+    hudDir.textContent = compassDir(c.angleDeg);
+    drawOverlay(c.angleDeg, c.distPct, c.px, c.py, formatCoord(c), compassDir(c.angleDeg));
   });
 
-  canvas.addEventListener('mouseleave', function () {
-    coordMain.textContent = '— passe o mouse';
-    coordMain.className = 'coord-value empty';
-    coordSub.textContent = '';
-    crosshair.style.display = 'none';
-    clearClock();
+  gc.addEventListener('mouseleave', function () {
+    octx.clearRect(0, 0, SIZE, SIZE);
+    hudCoord.textContent = '— —';
+    hudCoord.className = 'empty';
+    hudDir.textContent = '—';
   });
 
-  canvas.addEventListener('click', function (e) {
+  gc.addEventListener('click', function (e) {
     const c = getCoord(e.clientX, e.clientY);
     if (!c) return;
-    const text = formatCoord(c);
-    copy(text);
+    copyText(formatCoord(c));
   });
 
-  function copy(text) {
-    const success = () => {
-      toast.textContent = 'copiado: ' + text;
+  function copyText(text) {
+    const ok = () => {
+      toast.textContent = 'copiado  ' + text;
       toast.classList.add('show');
       clearTimeout(toast._t);
-      toast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+      toast._t = setTimeout(() => toast.classList.remove('show'), 2400);
     };
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(success).catch(() => fallback(text, success));
+      navigator.clipboard.writeText(text).then(ok).catch(() => fallback(text, ok));
     } else {
-      fallback(text, success);
+      fallback(text, ok);
     }
   }
 
