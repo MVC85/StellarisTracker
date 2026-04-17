@@ -443,13 +443,15 @@
     return { hour, minute, distPct, angleDeg, px, py };
   }
 
-  // Format: [HH.MM-DD]  e.g.  [01.18-65]
+  // Format sem colchetes — para exibição
   function formatCoord(c) {
     const h = String(c.hour).padStart(2, '0');
     const m = String(c.minute).padStart(2, '0');
     const d = String(c.distPct).padStart(2, '0');
-    return `[${h}.${m}-${d}]`;
+    return `${h}.${m}-${d}`;
   }
+  // Format com colchetes — para clipboard
+  function formatCoordClip(c) { return `[${formatCoord(c)}]`; }
 
   const COMPASS = ['N','NNE','NE','ENE','L','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
   const compassDir = a => COMPASS[Math.round(a / 22.5) % 16];
@@ -484,7 +486,7 @@
   gc.addEventListener('click', function (e) {
     const c = getCoord(e.clientX, e.clientY);
     if (!c) return;
-    copyText(formatCoord(c));
+    copyText(formatCoordClip(c));
   });
 
   function copyText(text) {
