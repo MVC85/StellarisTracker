@@ -173,9 +173,9 @@
 <body>
 
 <header>
-  <div class="logo">Stellaris <span>/ Coordinate Tracker</span></div>
+  <div class="logo">Stellaris <span>/ Galaxy Map</span></div>
   <div class="sep"></div>
-  <div class="tagline"> v.260430</div>
+  <div class="tagline">Coordinate Tracker</div>
 </header>
 
 <div id="map-container">
@@ -368,6 +368,51 @@
 
   function drawOverlay(angleDeg, distPct, mx, my, coordText, dirText) {
     octx.clearRect(0, 0, SIZE, SIZE);
+
+    // ── Sector highlight (fatia de pizza entre as duas horas mais proximas) ──
+    const hourAngle = (angleDeg / 360) * 12;
+    const h0 = Math.floor(hourAngle);
+    const h1 = h0 + 1;
+    const a0 = (h0 / 12) * Math.PI * 2 - Math.PI / 2;
+    const a1 = (h1 / 12) * Math.PI * 2 - Math.PI / 2;
+    octx.save();
+    octx.beginPath();
+    octx.moveTo(CX, CY);
+    octx.arc(CX, CY, R, a0, a1);
+    octx.closePath();
+    var sectorGrad = octx.createRadialGradient(CX, CY, 0, CX, CY, R);
+    sectorGrad.addColorStop(0,   'rgba(74,108,247,0)');
+    sectorGrad.addColorStop(0.3, 'rgba(74,108,247,0.07)');
+    sectorGrad.addColorStop(1,   'rgba(100,140,255,0.13)');
+    octx.fillStyle = sectorGrad;
+    octx.fill();
+    octx.strokeStyle = 'rgba(110,140,255,0.25)';
+    octx.lineWidth = 1;
+    octx.setLineDash([3, 6]);
+    octx.beginPath(); octx.moveTo(CX, CY); octx.lineTo(CX + Math.cos(a0) * R, CY + Math.sin(a0) * R); octx.stroke();
+    octx.beginPath(); octx.moveTo(CX, CY); octx.lineTo(CX + Math.cos(a1) * R, CY + Math.sin(a1) * R); octx.stroke();
+    octx.restore();
+
+    // ── Anel de distancia ativo ──
+    var distFrac = distPct / 100;
+    var nearestRing = Math.round(distFrac / 0.2) * 0.2;
+    if (nearestRing > 0 && nearestRing <= 1) {
+      octx.save();
+      octx.beginPath();
+      octx.arc(CX, CY, R * nearestRing, 0, Math.PI * 2);
+      octx.strokeStyle = 'rgba(232,201,122,0.45)';
+      octx.lineWidth = 1.2;
+      octx.setLineDash([4, 6]);
+      octx.stroke();
+      var ringLabel = Math.round(nearestRing * 100) + '%';
+      var rfs = Math.max(8, Math.round(SIZE * 0.014));
+      octx.font = rfs + 'px "Share Tech Mono", monospace';
+      octx.fillStyle = 'rgba(232,201,122,0.6)';
+      octx.textAlign = 'left';
+      octx.textBaseline = 'middle';
+      octx.fillText(ringLabel, CX + R * nearestRing + 4, CY - 4);
+      octx.restore();
+    }
 
     // ── Crosshair at cursor ──
     const len = 10, gap = 5;
