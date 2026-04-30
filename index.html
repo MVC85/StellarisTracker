@@ -451,7 +451,12 @@
     return `${h}.${m}-${d}`;
   }
   // Format com colchetes — para clipboard
-  function formatCoordClip(c) { return `[${formatCoord(c)}]`; }
+  function formatCoordClip(c) {
+    const h = String(c.hour).padStart(2, '0');
+    const m = String(c.minute).padStart(2, '0');
+    const d = String(c.distPct).padStart(2, '0');
+    return `[${h}\uD83C\uDDED${m}\uD83C\uDDF2${d}\uD83C\uDDE9] `;
+  }
 
   const COMPASS = ['N','NNE','NE','ENE','L','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
   const compassDir = a => COMPASS[Math.round(a / 22.5) % 16];
