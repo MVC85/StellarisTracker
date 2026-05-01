@@ -191,7 +191,7 @@
   <span id="hud-dir">—</span>
 </div>
 
-<div class="hint">hover → lê &nbsp;·&nbsp; clique → copia para o clipboard</div>
+<div class="hint">hover → lê &nbsp;·&nbsp; clique → copia &nbsp;·&nbsp; duplo clique → pin (salvo na url)</div>
 <div id="toast"></div>
 
 <script>
@@ -533,28 +533,213 @@
     hudDir.textContent = '—';
   });
 
+  /* ── Pin system ── */
+  var pins = [];
+  var pinCounter = 0;
+  var selectedPin = -1; // índice do pin selecionado (exibe lixeira)
+
+  function savePinsToURL() {
+    if (pins.length === 0) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      return;
+    }
+    var encoded = pins.map(function(p) {
+      return p.id + ':' + p.hour + '.' + p.minute + '-' + p.distPct + ':' + Math.round(p.angleDeg * 100) + ':' + Math.round(p.px) + ':' + Math.round(p.py);
+    }).join(',');
+    history.replaceState(null, '', '#pins=' + encoded);
+  }
+
+  function loadPinsFromURL() {
+    var hash = window.location.hash;
+    if (!hash || hash.indexOf('pins=') === -1) return;
+    var raw = hash.replace('#pins=', '');
+    raw.split(',').forEach(function(seg) {
+      var parts = seg.split(':');
+      if (parts.length < 5) return;
+      var id     = parseInt(parts[0]);
+      var coord  = parts[1];
+      var angDeg = parseInt(parts[2]) / 100;
+      var px     = parseInt(parts[3]);
+      var py     = parseInt(parts[4]);
+      var m1 = coord.match(/^(\d+)\.(\d+)-(\d+)$/);
+      if (!m1) return;
+      pins.push({ id: id, hour: parseInt(m1[1]), minute: parseInt(m1[2]), distPct: parseInt(m1[3]), angleDeg: angDeg, px: px, py: py });
+      if (id >= pinCounter) pinCounter = id + 1;
+    });
+    drawPins();
+  }
+
+  function pinHitTest(px, py) {
+    var HIT = 14;
+    for (var i = pins.length - 1; i >= 0; i--) {
+      var p = pins[i];
+      // hit na bolinha do pin (que fica 18px acima do ponto)
+      if (Math.hypot(px - p.px, py - (p.py - 18)) < HIT) return i;
+    }
+    return -1;
+  }
+
+  function trashHitTest(px, py) {
+    if (selectedPin === -1) return false;
+    var p = pins[selectedPin];
+    // lixeira fica 20px à direita da bolinha
+    var tx = p.px + 20, ty = p.py - 36;
+    return Math.hypot(px - tx, py - ty) < 12;
+  }
+
+  function drawPin(ctx, p, selected) {
+    ctx.save();
+    // haste
+    ctx.beginPath();
+    ctx.moveTo(p.px, p.py);
+    ctx.lineTo(p.px, p.py - 18);
+    ctx.strokeStyle = selected ? 'rgba(255,100,100,0.9)' : 'rgba(232,201,122,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([]);
+    ctx.stroke();
+    // círculo
+    ctx.beginPath();
+    ctx.arc(p.px, p.py - 18, 10, 0, Math.PI * 2);
+    ctx.fillStyle = selected ? 'rgba(40,10,10,0.92)' : 'rgba(10,10,30,0.88)';
+    ctx.fill();
+    ctx.strokeStyle = selected ? 'rgba(255,100,100,0.9)' : 'rgba(232,201,122,0.8)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    // número
+    ctx.font = 'bold 10px "Share Tech Mono", monospace';
+    ctx.fillStyle = selected ? 'rgba(255,150,150,1)' : 'rgba(232,201,122,1)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(p.id), p.px, p.py - 17);
+    // lixeira (só se selecionado)
+    if (selected) {
+      var tx = p.px + 20, ty = p.py - 36;
+      // fundo
+      ctx.beginPath();
+      ctx.arc(tx, ty, 11, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(180,40,40,0.92)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,120,120,0.8)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // ícone lixeira (desenhado manualmente, simples)
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([]);
+      var lx = tx, ly = ty;
+      // corpo
+      ctx.strokeRect(lx - 4, ly - 2, 8, 7);
+      // tampa
+      ctx.beginPath();
+      ctx.moveTo(lx - 5, ly - 2); ctx.lineTo(lx + 5, ly - 2);
+      ctx.stroke();
+      // alça
+      ctx.beginPath();
+      ctx.moveTo(lx - 2, ly - 2); ctx.lineTo(lx - 2, ly - 4);
+      ctx.lineTo(lx + 2, ly - 4); ctx.lineTo(lx + 2, ly - 2);
+      ctx.stroke();
+      // linhas internas
+      ctx.beginPath();
+      ctx.moveTo(lx, ly - 1); ctx.lineTo(lx, ly + 4);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawPins() {
+    gctx.clearRect(0, 0, SIZE, SIZE);
+    drawGalaxy();
+    pins.forEach(function(p, i) {
+      drawPin(gctx, p, i === selectedPin);
+    });
+  }
+
+  // Clique simples
   gc.addEventListener('click', function (e) {
-    const c = getCoord(e.clientX, e.clientY);
+    var rect = gc.getBoundingClientRect();
+    var px = (e.clientX - rect.left) * (SIZE / rect.width);
+    var py = (e.clientY - rect.top)  * (SIZE / rect.height);
+
+    // clique na lixeira?
+    if (selectedPin !== -1 && trashHitTest(px, py)) {
+      pins.splice(selectedPin, 1);
+      selectedPin = -1;
+      drawPins();
+      savePinsToURL();
+      showToast('pin removido');
+      return;
+    }
+
+    // clique num pin?
+    var hit = pinHitTest(px, py);
+    if (hit !== -1) {
+      if (selectedPin === hit) {
+        // segundo clique no mesmo: deseleciona e copia
+        var p = pins[hit];
+        selectedPin = -1;
+        drawPins();
+        copyText(formatCoordClip(p));
+      } else {
+        // seleciona e exibe lixeira
+        selectedPin = hit;
+        drawPins();
+      }
+      return;
+    }
+
+    // clique fora: deseleciona
+    if (selectedPin !== -1) {
+      selectedPin = -1;
+      drawPins();
+      return;
+    }
+
+    // clique normal: copia coord
+    var c = getCoord(e.clientX, e.clientY);
     if (!c) return;
     copyText(formatCoordClip(c));
   });
 
+  // Duplo clique: adiciona pin
+  gc.addEventListener('dblclick', function (e) {
+    var rect = gc.getBoundingClientRect();
+    var px = (e.clientX - rect.left) * (SIZE / rect.width);
+    var py = (e.clientY - rect.top)  * (SIZE / rect.height);
+
+    // não adiciona se clicou em cima de um pin
+    if (pinHitTest(px, py) !== -1) return;
+
+    var c = getCoord(e.clientX, e.clientY);
+    if (!c) return;
+    selectedPin = -1;
+    pinCounter++;
+    pins.push({ id: pinCounter, hour: c.hour, minute: c.minute, distPct: c.distPct, angleDeg: c.angleDeg, px: Math.round(c.px), py: Math.round(c.py) });
+    drawPins();
+    savePinsToURL();
+    showToast('pin #' + pinCounter + '  ' + formatCoord(c));
+  });
+
+  // Carrega pins salvos na URL ao iniciar
+  loadPinsFromURL();
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function() { toast.classList.remove('show'); }, 2400);
+  }
+
   function copyText(text) {
-    const ok = () => {
-      toast.textContent = 'copiado  ' + text;
-      toast.classList.add('show');
-      clearTimeout(toast._t);
-      toast._t = setTimeout(() => toast.classList.remove('show'), 2400);
-    };
+    var ok = function() { showToast('copiado  ' + text); };
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(ok).catch(() => fallback(text, ok));
+      navigator.clipboard.writeText(text).then(ok).catch(function() { fallback(text, ok); });
     } else {
       fallback(text, ok);
     }
   }
 
   function fallback(text, cb) {
-    const ta = document.createElement('textarea');
+    var ta = document.createElement('textarea');
     ta.value = text;
     ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
     document.body.appendChild(ta);
